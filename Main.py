@@ -3,18 +3,23 @@ from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 import random
 import string
 
-TOKEN = \"توکن\\_ربات\\_تو\\_اینجا\"
-CHANNELS = \\[\"@Channel1\", \"@Channel2\", \"@Channel3\"\\]
+\\# توکن ربات
+TOKEN = \"8562651796:AAFj13lnnFffHLeeF_3POAkDN-Lm_Qt3pg4\"
+
+\\# لیست کانال‌ها فعلاً خالیه، بعداً اضافه می‌کنی
+CHANNELS = \\[\\]  # مثال: \\[\"@Channel1\", \"@Channel2\"\\]
 
 bot = telebot.TeleBot(TOKEN)
 
-\\# دیتابیس ساده در مموری (اگر رستارت بشه، داده‌ها پاک می‌شوند)
+\\# دیتابیس ساده در مموری
 video_links = {}  # format: { \"link8حرف\": \"file_id\" }
 user_status = {}
 
+\\# تولید لینک اختصاصی برای هر فیلم
 def generate_link():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
+\\# چک عضویت
 def check_membership(user_id):
     not_joined = \\[\\]
     for ch in CHANNELS:
@@ -22,18 +27,19 @@ def check_membership(user_id):
             member = bot.get_chat_member(ch, user_id)
             if member.status in \\[\"left\", \"kicked\"\\]:
                 not_joined.append(ch)
-        except Exception:
+        except:
             not_joined.append(ch)
     return not_joined
 
+\\# دریافت فیلم از تو
 @bot.message_handler(content_types=\\['video'\\])
 def handle_video(message):
-    # وقتی تو فیلم می‌فرستی
     file_id = message.video.file_id
     link = generate_link()
     video_links\\[link\\] = file_id
     bot.reply_to(message, f\"فیلم ذخیره شد ✅\\\\nلینک اختصاصی برای کاربران: /{link}\")
 
+\\# لینک اختصاصی برای کاربران
 @bot.message_handler(func=lambda m: m.text and m.text.startswith('/'))
 def handle_link(message):
     link = message.text\\[1:\\]
@@ -55,8 +61,9 @@ def handle_link(message):
         bot.send_video(message.chat.id, file_id)
         bot.reply_to(message, \"🎬 این فیلم برای شماست!\")
 
+\\# دستور start
 @bot.message_handler(commands=\\['start'\\])
-def cmd_start(message):
-    bot.reply_to(message, \"سلام! یک لینک فیلم از من بگیر، اول باید جوین سه کانال بشی تا بتونی فیلم رو دانلود کنی.\")
+def start(message):
+    bot.reply_to(message, \"سلام! برای دریافت فیلم‌ها لینک اختصاصی دریافت کنید و ابتدا در کانال‌ها عضو شوید (اگر کانالی موجود باشد).\")
 
 bot.infinity_polling()
